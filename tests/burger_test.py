@@ -188,3 +188,54 @@ class TestBurgerGetReceipt:
         burger.add_ingredient(mock_ing)
         receipt = burger.get_receipt()
         assert expected_line in receipt
+
+    def test_get_receipt_full_structure_only_bun(self):
+        burger = Burger()
+        mock_bun = Mock(spec=Bun)
+        mock_bun.get_name.return_value = 'black bun'
+        mock_bun.get_price.return_value = 100.0
+        burger.set_buns(mock_bun)
+        receipt = burger.get_receipt()
+        expected = (
+            '(==== black bun ====)\n'
+            '(==== black bun ====)\n\n'
+            'Price: 200.0'
+        )
+        assert receipt == expected
+
+    def test_get_receipt_full_structure_bun_and_ingredients(self):
+        burger = Burger()
+        mock_bun = Mock(spec=Bun)
+        mock_bun.get_name.return_value = 'white bun'
+        mock_bun.get_price.return_value = 50.0
+        burger.set_buns(mock_bun)
+        ing1 = Mock(spec=Ingredient)
+        ing1.get_type.return_value = 'SAUCE'
+        ing1.get_name.return_value = 'hot sauce'
+        ing1.get_price.return_value = 10.0
+        ing2 = Mock(spec=Ingredient)
+        ing2.get_type.return_value = 'FILLING'
+        ing2.get_name.return_value = 'cutlet'
+        ing2.get_price.return_value = 20.0
+        burger.add_ingredient(ing1)
+        burger.add_ingredient(ing2)
+        receipt = burger.get_receipt()
+        expected = (
+            '(==== white bun ====)\n'
+            '= sauce hot sauce =\n'
+            '= filling cutlet =\n'
+            '(==== white bun ====)\n\n'
+            'Price: 130.0'
+        )
+        assert receipt == expected
+
+    def test_get_receipt_empty_ingredients_order_and_price(self):
+        burger = Burger()
+        mock_bun = Mock(spec=Bun)
+        mock_bun.get_name.return_value = 'bun'
+        mock_bun.get_price.return_value = 0.0
+        burger.set_buns(mock_bun)
+        receipt = burger.get_receipt()
+        assert '(==== bun ====)' in receipt
+        assert receipt.endswith('Price: 0.0')
+        assert mock_bun.get_name.call_count >= 2
